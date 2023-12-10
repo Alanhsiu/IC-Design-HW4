@@ -107,6 +107,8 @@ initial begin
 			error = diff*diff;
 			`ifdef DEBUG
 				$display("Pattern %3d. / Output: %2d / Golden: %1d / MSE: %1d", j, o_y, GOLDEN_MEM[j], error[31:8]);
+				// display the output in binary format
+				$display("Pattern %3d. / Output: %b / Golden: %b / MSE: %1d", j, o_y, GOLDEN_MEM[j], error[31:8]);
 			`endif
 			mse = mse + error;
 		end
