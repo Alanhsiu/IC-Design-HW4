@@ -10,12 +10,35 @@ module sigmoid (
 
 wire [50:0]  gate_count[3:0];
 
-wire [7:0] y_reg; 
-wire [7:0] y_reg_next;
+reg [7:0] y_reg; 
+reg [7:0] y_reg_next;
 wire out_valid_reg;
 wire out_valid_reg_next;
 
-assign y_reg_next = {!i_x[7], i_x[6:0]};
+parameter b1 = 8'b0100_0000; // 0.25,  -4 <= x <= -2
+parameter b2 = 8'b0110_0000; // 0.375, -2 <= x <= -1
+parameter b3 = 8'b1000_0000; // 0.5,   -1 <= x <= 1
+parameter b4 = 8'b1010_0000; // 0.625,  1 <= x <= 2
+parameter b5 = 8'b1100_0000; // 0.75,   2 <= x <= 4
+
+// use first two or three bits of x to select which segment to use
+always @(*) begin
+	if(i_x[7:6] == 2'b10) begin
+		y_reg_next <= {1'b1, i_x[7:1]} + b1; // -4 <= x < -2
+	end
+	else if(i_x[7:5] == 3'b110) begin
+		y_reg_next <= {i_x[7:0]} + b2; // -2 <= x < -1
+	end
+	else if(i_x[7:5] == 3'b000 || i_x[7:5] == 3'b111) begin
+		y_reg_next <= {i_x[6:0], 1'b0} + b3; // -1 <= x < 1
+	end
+	else if(i_x[7:5] == 3'b001) begin
+		y_reg_next <= {i_x[7:0]} + b4; // 1 <= x < 2
+	end
+	else if(i_x[7:6] == 2'b01) begin
+		y_reg_next <= {1'b0, i_x[7:1]} + b5; // 2 <= x < 4
+	end
+end
 
 MUX21H mux_gate(
 	.Z(out_valid_reg_next),
